@@ -1,0 +1,51 @@
+name: "image_build_and_push"
+
+on: workflow_dispatch
+
+
+env: 
+  IMAGE_NAME: get-todo
+  IMAGE_TAG: v1
+  ACR_NAME: sandyacr6
+  ACR_LOGIN_SERVER: sandyacr6.azurecr.io
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-push-job:
+    name: build-push-name
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5.0.0
+      
+    - name: Azure Login
+      uses: Azure/login@v2.3.0
+      with:
+        client-id: 8df4a4af-592f-4f26-8526-998d0f878854
+        tenant-id: 86a803ff-6c03-41fe-875e-7c14c24f963c
+        subscription-id: b37d1b55-e5e8-4acb-a848-fd89484f0997
+
+    - name: ACR login
+      run: |
+        az acr login --name $ACR_NAME
+
+    - name: Build docker image
+      run: |
+        docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+    - name: Tag docker image for ACR
+      run: |
+        docker tag $IMAGE_NAME:$IMAGE_TAG $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+
+    - name: Push docker image to ACR
+      run: |
+        docker push $ACR_LOGIN_SERVER/$IMAGE_NAME:$IMAGE_TAG
+      
+    
+         
+
+    
